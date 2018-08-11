@@ -24,6 +24,7 @@ ipch/
 *.opensdf
 *.sdf
 *.cachefile
+*.opendb
 
 #-- Backup & report files from converting an old project file to a newer
 #   Visual Studio version. Backup files are not needed, because we have git ;-)
@@ -88,7 +89,6 @@ $RECYCLE.BIN/
 *.d
 *.o
 
-vcproj/GUP.sln
 curl/winbuild/CURL_OBJS.inc
 curl/winbuild/LIBCURL_OBJS.inc
 curl/winbuild/vc120.idb
