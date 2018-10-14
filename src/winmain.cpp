@@ -42,12 +42,14 @@ static HWND hProgressDlg;
 static HWND hProgressBar;
 static bool doAbort = false;
 static bool stopDL = false;
+static bool IsUpdateInBackground = false;
 static string msgBoxTitle = "";
 static string abortOrNot = "";
 static string proxySrv = "0.0.0.0";
 static long proxyPort  = 0;
 static string winGupUserAgent = "WinGup/";
 static string dlFileName = "";
+static string defaultSilentInstallParam = "/S";
 
 const char FLAG_OPTIONS[] = "-options";
 const char FLAG_VERBOSE[] = "-verbose";
@@ -57,6 +59,7 @@ const char FLAG_CLEANUP[] = "-clean";
 
 const char MSGID_NOUPDATE[] = "No update is available.";
 const char MSGID_UPDATEAVAILABLE[] = "An update package is available, do you want to download it?";
+const char MSGID_UPDATEINBACKGROUND[] = "Update in background. (Updater will be running silently.)";
 const char MSGID_DOWNLOADSTOPPED[] = "Download is stopped by user. Update is aborted.";
 const char MSGID_CLOSEAPP[] = " is opened.\rUpdater will close it in order to process the installation.\rContinue?";
 const char MSGID_ABORTORNOT[] = "Do you want to abort update download?";
@@ -74,7 +77,7 @@ gup -unzipTo [-clean] FOLDER_TO_ACTION ZIP_URL\r\
     -v : Launch GUP with VERSION_VALUE.\r\
          VERSION_VALUE is the current version number of program to update.\r\
          If you pass the version number as the argument,\r\
-         then the version set in the gup.xml will be overrided.\r\
+         then the version set in the gup.xml will be overridden.\r\
 	-p : Launch GUP with CUSTOM_PARAM.\r\
 	     CUSTOM_PARAM will pass to destination by using GET method\r\
          with argument name \"param\"\r\
@@ -84,8 +87,10 @@ gup -unzipTo [-clean] FOLDER_TO_ACTION ZIP_URL\r\
     ZIP_URL: The URL to download zip file.\r\
     FOLDER_TO_ACTION: The folder where we clean or/and unzip to.\r\
 	";
-std::string thirdDoUpdateDlgButtonLabel;
 
+std::string thirdDoUpdateDlgButtonLabel = "";
+std::string updateAvailable = MSGID_UPDATEAVAILABLE;
+std::string updateInBackground = MSGID_UPDATEINBACKGROUND;
 
 //commandLine should contain path to n++ executable running
 void parseCommandLine(const char* commandLine, ParamVector& paramVector)
@@ -426,7 +431,12 @@ static size_t setProgress(HWND, double t, double d, double, double)
 	while (stopDL)
 		::Sleep(1000);
 	size_t step = size_t(d * 100.0 / t - downloadRatio);
-	downloadRatio = size_t(d * 100.0 / t);
+
+	// Looks like sometime curl is not giving proper data, so workaround
+	// Issue has been reported for Notepad++ (#4666 and #4069)
+	size_t ratioTemp = size_t(d * 100.0 / t);
+	if (ratioTemp <= 100)
+		downloadRatio = ratioTemp;
 
 	SendMessage(hProgressBar, PBM_SETSTEP, (WPARAM)step, 0);
 	SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
@@ -489,8 +499,14 @@ LRESULT CALLBACK yesNoNeverDlgProc(HWND hWndDlg, UINT message, WPARAM wParam, LP
 	{
 		case WM_INITDIALOG:
 		{
-			if (thirdDoUpdateDlgButtonLabel != "")
+			if (!thirdDoUpdateDlgButtonLabel.empty())
 				::SetDlgItemTextA(hWndDlg, IDCANCEL, thirdDoUpdateDlgButtonLabel.c_str());
+			else
+				::ShowWindow(::GetDlgItem(hWndDlg, IDCANCEL), FALSE);
+
+			::SetWindowTextA(hWndDlg, msgBoxTitle.c_str());
+			::SetWindowTextA(::GetDlgItem(hWndDlg, IDC_YESNONEVERMSG), updateAvailable.c_str());
+			::SetWindowTextA(::GetDlgItem(hWndDlg, IDC_CHK_IN_BACKGROUND), updateInBackground.c_str());
 
 			goToScreenCenter(hWndDlg);
 			return TRUE;
@@ -504,6 +520,10 @@ LRESULT CALLBACK yesNoNeverDlgProc(HWND hWndDlg, UINT message, WPARAM wParam, LP
 				case IDNO:
 				case IDCANCEL:
 					EndDialog(hWndDlg, wParam);
+					return TRUE;
+
+				case IDC_CHK_IN_BACKGROUND:
+					IsUpdateInBackground ^= 1; // toggle the value
 					return TRUE;
 
 				default:
@@ -615,7 +635,7 @@ bool getUpdateInfo(const string& info2get, const GupParameters& gupParams, const
 {
 	char errorBuffer[CURL_ERROR_SIZE] = { 0 };
 
-	// Check on the web the availibility of update
+	// Check on the web the availability of update
 	// Get the update package's location
 	CURL *curl;
 	CURLcode res = CURLE_FAILED_INIT;
@@ -689,7 +709,7 @@ bool getUpdateInfo(const string& info2get, const GupParameters& gupParams, const
 	return true;
 }
 
-bool runInstaller(const string& app2runPath, const string& binWindowsClassName, const string& closeMsg, const string& closeMsgTitle)
+bool runInstaller(const string& app2runPath, const string& app2runParam, const string& binWindowsClassName, const string& closeMsg, const string& closeMsgTitle)
 {
 
 	if (!binWindowsClassName.empty())
@@ -698,24 +718,47 @@ bool runInstaller(const string& app2runPath, const string& binWindowsClassName, 
 
 		if (h)
 		{
-			int installAnswer = ::MessageBoxA(NULL, closeMsg.c_str(), closeMsgTitle.c_str(), MB_YESNO);
-
-			if (installAnswer == IDNO)
+			if (false == IsUpdateInBackground)
 			{
-				return 0;
-			}
-		}
+				int installAnswer = ::MessageBoxA(NULL, closeMsg.c_str(), closeMsgTitle.c_str(), MB_YESNO);
 
-		// kill all process of binary needs to be updated.
-		while (h)
-		{
-			::SendMessage(h, WM_CLOSE, 0, 0);
-			h = ::FindWindowExA(NULL, NULL, binWindowsClassName.c_str(), NULL);
+				if (installAnswer == IDNO)
+				{
+					return 0;
+				}
+
+				// kill all process of binary needs to be updated.
+				while (h)
+				{
+					::SendMessage(h, WM_CLOSE, 0, 0);
+					h = ::FindWindowExA(NULL, NULL, binWindowsClassName.c_str(), NULL);
+				}
+			}
+			else
+			{
+				// If program is running, then wait for program to exit
+				do
+				{
+					DWORD dwProcessID = 0;
+					DWORD dwThreadID = ::GetWindowThreadProcessId(h, &dwProcessID);
+					if (0 != dwThreadID)
+					{
+						HANDLE hProcess = ::OpenProcess(SYNCHRONIZE, FALSE, dwProcessID);
+						if (NULL != hProcess)
+						{
+							::WaitForSingleObject(hProcess, INFINITE);
+							CloseHandle(hProcess);
+						}
+					}
+					h = ::FindWindowExA(NULL, NULL, binWindowsClassName.c_str(), NULL);
+				} while (h);
+			}
 		}
 	}
 
 	// execute the installer
-	HINSTANCE result = ::ShellExecuteA(NULL, "open", app2runPath.c_str(), "", ".", SW_SHOW);
+	BOOL bShow = IsUpdateInBackground ? SW_HIDE : SW_SHOW;
+	HINSTANCE result = ::ShellExecuteA(NULL, "open", app2runPath.c_str(), app2runParam.c_str(), ".", bShow);
 
 	if (result <= (HINSTANCE)32) // There's a problem (Don't ask me why, ask Microsoft)
 	{
@@ -939,7 +982,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpszCmdLine, int)
 	// Notepad++ Updater
 	//
 	hInst = hInstance;
-	try {
+	try
+	{
 		if (launchSettingsDlg)
 		{
 			if (extraOptions.hasProxySettings())
@@ -963,7 +1007,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpszCmdLine, int)
 
 		// Get your software's current version.
 		// If you pass the version number as the argument
-		// then the version set in the gup.xml will be overrided
+		// then the version set in the gup.xml will be overridden
 		if (!version.empty())
 			gupParams.setCurrentVersion(version.c_str());
 
@@ -1001,21 +1045,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpszCmdLine, int)
 		//
 
 		// Ask user if he/she want to do update
-		string updateAvailable = nativeLang.getMessageString("MSGID_UPDATEAVAILABLE");
-		if (updateAvailable == "")
+		updateAvailable = nativeLang.getMessageString("MSGID_UPDATEAVAILABLE");
+		if (updateAvailable.empty())
 			updateAvailable = MSGID_UPDATEAVAILABLE;
-		
+
+		updateInBackground = nativeLang.getMessageString("MSGID_UPDATEINBACKGROUND");
+		if (updateInBackground.empty())
+			updateInBackground = MSGID_UPDATEINBACKGROUND;
+
 		int thirdButtonCmd = gupParams.get3rdButtonCmd();
 		thirdDoUpdateDlgButtonLabel = gupParams.get3rdButtonLabel();
 
 		int dlAnswer = 0;
 		HWND hApp = ::FindWindowExA(NULL, NULL, gupParams.getClassName().c_str(), NULL);
 		bool isModal = gupParams.isMessageBoxModal();
-
-		if (!thirdButtonCmd)
-			dlAnswer = ::MessageBoxA(isModal ? hApp : NULL, updateAvailable.c_str(), gupParams.getMessageBoxTitle().c_str(), MB_YESNO);
-		else
-			dlAnswer = static_cast<int32_t>(::DialogBox(hInst, MAKEINTRESOURCE(IDD_YESNONEVERDLG), isModal ? hApp : NULL, reinterpret_cast<DLGPROC>(yesNoNeverDlgProc)));
+		dlAnswer = static_cast<int32_t>(::DialogBox(hInst, MAKEINTRESOURCE(IDD_YESNONEVERDLG), isModal ? hApp : NULL, reinterpret_cast<DLGPROC>(yesNoNeverDlgProc)));
 
 		if (dlAnswer == IDNO)
 		{
@@ -1037,8 +1081,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpszCmdLine, int)
 		//
 		// Download executable bin
 		//
-		::CreateThread(NULL, 0, launchProgressBar, NULL, 0, NULL);
-		
+		if (!IsUpdateInBackground)
+		{
+			// If updater is running in background mode, then no need show progress bar
+			::CreateThread(NULL, 0, launchProgressBar, NULL, 0, NULL);
+		}
+
 		std::string dlDest = std::getenv("TEMP");
 		dlDest += "\\";
 		dlDest += ::PathFindFileNameA(gupDlInfo.getDownloadLocation().c_str());
@@ -1071,11 +1119,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpszCmdLine, int)
 			closeApp = MSGID_CLOSEAPP;
 		msg += closeApp;
 
-		runInstaller(dlDest, gupParams.getClassName(), msg, gupParams.getMessageBoxTitle().c_str());
+		string installerParam = IsUpdateInBackground ? gupParams.getInstallerParamSilent() : gupParams.getInstallerParamNormal();
+		if (installerParam.empty() && IsUpdateInBackground)
+			installerParam = defaultSilentInstallParam;
+
+		runInstaller(dlDest, installerParam, gupParams.getClassName(), msg, gupParams.getMessageBoxTitle().c_str());
 
 		return 0;
 
-	} catch (exception ex) {
+	}
+	catch (const exception& ex)
+	{
 		if (!isSilentMode)
 			::MessageBoxA(NULL, ex.what(), "Xml Exception", MB_OK);
 
