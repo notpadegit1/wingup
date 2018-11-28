@@ -256,6 +256,56 @@ bool deleteFileOrFolder(const string& f2delete)
 	return (res == 0);
 };
 
+bool CreateDirRecursive(const string& unzipDestTo, const string& file2extrait, bool inputIsDir)
+{
+	// file2extrait be separated into an array
+	vector<string> strArray = tokenizeString(file2extrait, '/');
+
+	unsigned fileElement = 1;
+	if (inputIsDir)
+	{
+		fileElement = 0;
+	}
+
+	// loop unzipDestTo + file2extraitVector[i] to create directory (by checking existing file length is 0, and removing existing file)
+	if (strArray.size() > fileElement)
+	{
+		string folderFullFilePath = unzipDestTo;
+		for (int j = 0; j < int(strArray.size() - fileElement); ++j) // loop on only directory, not on file (which is the last element)
+		{
+			PathAppend(folderFullFilePath, strArray[j]);
+
+			BOOL isCreateFolderOK = FALSE;
+			if (::PathFileExistsA(folderFullFilePath.c_str()))
+			{
+				if (!::PathIsDirectoryA(folderFullFilePath.c_str()))
+				{
+					// if it's a file, remove it
+					deleteFileOrFolder(folderFullFilePath);
+					
+					// create it
+					isCreateFolderOK = ::CreateDirectoryA(folderFullFilePath.c_str(), NULL);
+				}
+				else //perfect
+				{
+					isCreateFolderOK = TRUE;
+				}
+			}
+			else
+			{
+				// create it
+				isCreateFolderOK = ::CreateDirectoryA(folderFullFilePath.c_str(), NULL);
+			}
+
+			// check if directory creation failed
+			if (!isCreateFolderOK)
+				return false;
+		}
+	}
+
+	return true;
+}
+
 std::string getFileContent(const char *file2read)
 {
 	if (!::PathFileExistsA(file2read))
@@ -310,11 +360,7 @@ bool decompress(const string& zipFullFilePath, const string& unzipDestTo)
 		string extraitFullFilePath = unzipDestTo;
 		PathAppend(extraitFullFilePath, file2extrait);
 
-		ZipArchiveEntry::Attributes attr = entry->GetAttributes();
-
-		//auto pos = extraitFullFilePath.find_last_of('/');
-		//if (pos == extraitFullFilePath.length() - 1) // it's a folder to created
-		if (attr == ZipArchiveEntry::Attributes::Directory)
+		if (entry->IsDirectory())
 		{
 			// if folder doesn't exist, create it.
 			if (!::PathFileExistsA(extraitFullFilePath.c_str()))
@@ -323,7 +369,7 @@ bool decompress(const string& zipFullFilePath, const string& unzipDestTo)
 				sprintf(msg, "[+] Create folder '%s'\n", file2extrait.c_str());
 				OutputDebugStringA(msg);
 
-				if (!::CreateDirectoryA(extraitFullFilePath.c_str(), NULL))
+				if (!CreateDirRecursive(unzipDestTo, file2extrait, true))
 					return false;
 			}
 		}
@@ -341,52 +387,16 @@ bool decompress(const string& zipFullFilePath, const string& unzipDestTo)
 			//
 			if (!destFile.is_open())
 			{
-				// file2extrait be separated into an array
-				vector<string> strArray = tokenizeString(file2extrait, '/');
+				if (!CreateDirRecursive(unzipDestTo, file2extrait, false))
+					return false;
 
-				// loop unzipDestTo + file2extraitVector[i] to create directory (by checking existing file length is 0, and removing existing file)
-				if (strArray.size() > 1)
+				// copy again
+				std::ofstream destFile2;
+				destFile2.open(extraitFullFilePath, std::ios::binary | std::ios::trunc);
+
+				if (!destFile2.is_open())
 				{
-					string folderFullFilePath = unzipDestTo;
-					for (int j = 0; j < int(strArray.size()) - 1; ++j) // loop on only directory, not on file (which is the last element)
-					{
-						PathAppend(folderFullFilePath, strArray[j]);
-
-						BOOL isCreateFolderOK = FALSE;
-						if (::PathFileExistsA(folderFullFilePath.c_str()))
-						{
-							if (!::PathIsDirectoryA(folderFullFilePath.c_str()))
-							{
-								// if it's a file, remove it
-								deleteFileOrFolder(folderFullFilePath);
-								
-								// create it
-								isCreateFolderOK = ::CreateDirectoryA(folderFullFilePath.c_str(), NULL);
-							}
-							else //perfect
-							{
-								isCreateFolderOK = TRUE;
-							}
-						}
-						else
-						{
-							// create it
-							isCreateFolderOK = ::CreateDirectoryA(folderFullFilePath.c_str(), NULL);
-						}
-
-						// check if directory creation failed
-						if (!isCreateFolderOK)
-							return false;
-					}
-
-					// copy again
-					std::ofstream destFile2;
-					destFile2.open(extraitFullFilePath, std::ios::binary | std::ios::trunc);
-
-					if (!destFile2.is_open())
-					{
-						return false;
-					}
+					return false;
 				}
 			}
 
