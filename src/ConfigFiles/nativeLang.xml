@@ -22,7 +22,7 @@
 
 <GUP_NativeLangue name = "English">
 	<PopupMessages>
-		<MSGID_NOUPDATE>No update is available.</MSGID_NOUPDATE>
+		<MSGID_NOUPDATE>No update is available.\r\rThe auto-update may not have been activated yet.\rGo to the official website to check for a new version?</MSGID_NOUPDATE>
 		<MSGID_UPDATEAVAILABLE>An update package is available, do you want to download it?</MSGID_UPDATEAVAILABLE>
 		<MSGID_DOWNLOADSTOPPED>Download is stopped by user. Update is aborted.</MSGID_DOWNLOADSTOPPED>
 		<MSGID_CLOSEAPP> is opened.\rUpdater will close it in order to process the installation.\rContinue?</MSGID_CLOSEAPP>

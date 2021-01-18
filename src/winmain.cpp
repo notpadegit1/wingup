@@ -56,7 +56,10 @@ const char FLAG_HELP[] = "--help";
 const char FLAG_UUZIP[] = "-unzipTo";
 const char FLAG_CLEANUP[] = "-clean";
 
-const char MSGID_NOUPDATE[] = "No update is available.";
+const char MSGID_NOUPDATE[] = "No update is available.\r\r\
+The auto-update may not have been activated yet.\r\
+Go to the official website to check for a new version?";
+
 const char MSGID_UPDATEAVAILABLE[] = "An update package is available, do you want to download it?";
 const char MSGID_DOWNLOADSTOPPED[] = "Download is stopped by user. Update is aborted.";
 const char MSGID_CLOSEAPP[] = " is opened.\rUpdater will close it in order to process the installation.\rContinue?";
@@ -1085,7 +1088,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpszCmdLine, int)
 				string noUpdate = nativeLang.getMessageString("MSGID_NOUPDATE");
 				if (noUpdate == "")
 					noUpdate = MSGID_NOUPDATE;
-				::MessageBoxA(NULL, noUpdate.c_str(), gupParams.getMessageBoxTitle().c_str(), MB_OK);
+				int res = ::MessageBoxA(NULL, noUpdate.c_str(), gupParams.getMessageBoxTitle().c_str(), MB_OKCANCEL);
+				if (res == IDOK)
+				{
+					// This URL is better to be in config
+					::ShellExecute(NULL, TEXT("open"), TEXT("https://notepad-plus-plus.org/downloads/"), NULL, NULL, SW_SHOWNORMAL);
+				}
 			}
 			return 0;
 		}
