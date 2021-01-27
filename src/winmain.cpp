@@ -56,10 +56,6 @@ const char FLAG_HELP[] = "--help";
 const char FLAG_UUZIP[] = "-unzipTo";
 const char FLAG_CLEANUP[] = "-clean";
 
-const char MSGID_NOUPDATE[] = "No update is available.\r\r\
-The auto-update may not have been activated yet.\r\
-Go to the official website to check for a new version?";
-
 const char MSGID_UPDATEAVAILABLE[] = "An update package is available, do you want to download it?";
 const char MSGID_DOWNLOADSTOPPED[] = "Download is stopped by user. Update is aborted.";
 const char MSGID_CLOSEAPP[] = " is opened.\rUpdater will close it in order to process the installation.\rContinue?";
@@ -593,6 +589,70 @@ LRESULT CALLBACK proxyDlgProc(HWND hWndDlg, UINT Msg, WPARAM wParam, LPARAM)
 	return FALSE;
 }
 
+struct UpdateCheckParams
+{
+	GupNativeLang& nativeLang;
+	GupParameters& gupParams;
+};
+
+LRESULT CALLBACK updateCheckDlgProc(HWND hWndDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_INITDIALOG:
+	{
+		auto* pParams = reinterpret_cast<UpdateCheckParams*>(lParam);
+		if (pParams)
+		{
+			const string& title = pParams->gupParams.getMessageBoxTitle();
+			if (!title.empty())
+				::SetWindowTextA(hWndDlg, title.c_str());
+			string text1 = pParams->nativeLang.getMessageString("MSGID_NOUPDATE1");
+			if (!text1.empty())
+				::SetDlgItemTextA(hWndDlg, IDC_UPDATE_STATIC1, text1.c_str());
+			string text2 = pParams->nativeLang.getMessageString("MSGID_NOUPDATE2");
+			if (!text2.empty())
+				::SetDlgItemTextA(hWndDlg, IDC_UPDATE_STATIC2, text2.c_str());
+		}
+		goToScreenCenter(hWndDlg);
+		return TRUE;
+	}
+
+	case WM_COMMAND:
+	{
+		switch LOWORD((wParam))
+		{
+		case IDOK:
+		case IDYES:
+		case IDNO:
+		case IDCANCEL:
+			EndDialog(hWndDlg, wParam);
+			return TRUE;
+		default:
+			break;
+		}
+	}
+
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->code)
+		{
+		case NM_CLICK:
+		case NM_RETURN:
+		{
+			PNMLINK pNMLink = (PNMLINK)lParam;
+			LITEM item = pNMLink->item;
+			if (lstrcmp(item.szID, TEXT("id_download")) == 0)
+			{
+				::ShellExecute(NULL, TEXT("open"), TEXT("https://notepad-plus-plus.org/downloads/"), NULL, NULL, SW_SHOWNORMAL);
+			}
+			break;
+		}
+		}
+		break;
+	}
+	return FALSE;
+}
+
 static DWORD WINAPI launchProgressBar(void *)
 {
 	::DialogBox(hInst, MAKEINTRESOURCE(IDD_PROGRESS_DLG), NULL, reinterpret_cast<DLGPROC>(progressBarDlgProc));
@@ -1079,21 +1139,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpszCmdLine, int)
 			return -1;
 		}
 
+		HWND hApp = ::FindWindowExA(NULL, NULL, gupParams.getClassName().c_str(), NULL);
+		bool isModal = gupParams.isMessageBoxModal();
 		GupDownloadInfo gupDlInfo(updateInfo.c_str());
 
 		if (!gupDlInfo.doesNeed2BeUpdated())
 		{
 			if (!isSilentMode)
 			{
-				string noUpdate = nativeLang.getMessageString("MSGID_NOUPDATE");
-				if (noUpdate == "")
-					noUpdate = MSGID_NOUPDATE;
-				int res = ::MessageBoxA(NULL, noUpdate.c_str(), gupParams.getMessageBoxTitle().c_str(), MB_OKCANCEL);
-				if (res == IDOK)
-				{
-					// This URL is better to be in config
-					::ShellExecute(NULL, TEXT("open"), TEXT("https://notepad-plus-plus.org/downloads/"), NULL, NULL, SW_SHOWNORMAL);
-				}
+				UpdateCheckParams localParams{ nativeLang, gupParams };
+				::DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_UPDATE_DLG), isModal ? hApp : NULL,
+					reinterpret_cast<DLGPROC>(updateCheckDlgProc), reinterpret_cast<LPARAM>(&localParams));
 			}
 			return 0;
 		}
@@ -1112,8 +1168,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpszCmdLine, int)
 		thirdDoUpdateDlgButtonLabel = gupParams.get3rdButtonLabel();
 
 		int dlAnswer = 0;
-		HWND hApp = ::FindWindowExA(NULL, NULL, gupParams.getClassName().c_str(), NULL);
-		bool isModal = gupParams.isMessageBoxModal();
 
 		if (!thirdButtonCmd)
 			dlAnswer = ::MessageBoxA(isModal ? hApp : NULL, updateAvailable.c_str(), gupParams.getMessageBoxTitle().c_str(), MB_YESNO);
