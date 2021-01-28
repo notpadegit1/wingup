@@ -591,8 +591,8 @@ LRESULT CALLBACK proxyDlgProc(HWND hWndDlg, UINT Msg, WPARAM wParam, LPARAM)
 
 struct UpdateCheckParams
 {
-	GupNativeLang& nativeLang;
-	GupParameters& gupParams;
+	GupNativeLang& _nativeLang;
+	GupParameters& _gupParams;
 };
 
 LRESULT CALLBACK updateCheckDlgProc(HWND hWndDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -601,16 +601,16 @@ LRESULT CALLBACK updateCheckDlgProc(HWND hWndDlg, UINT message, WPARAM wParam, L
 	{
 	case WM_INITDIALOG:
 	{
-		auto* pParams = reinterpret_cast<UpdateCheckParams*>(lParam);
-		if (pParams)
+		auto* params = reinterpret_cast<UpdateCheckParams*>(lParam);
+		if (params)
 		{
-			const string& title = pParams->gupParams.getMessageBoxTitle();
+			const string& title = params->_gupParams.getMessageBoxTitle();
 			if (!title.empty())
 				::SetWindowTextA(hWndDlg, title.c_str());
-			string text1 = pParams->nativeLang.getMessageString("MSGID_NOUPDATE1");
+			string text1 = params->_nativeLang.getMessageString("MSGID_NOUPDATE1");
 			if (!text1.empty())
 				::SetDlgItemTextA(hWndDlg, IDC_UPDATE_STATIC1, text1.c_str());
-			string text2 = pParams->nativeLang.getMessageString("MSGID_NOUPDATE2");
+			string text2 = params->_nativeLang.getMessageString("MSGID_NOUPDATE2");
 			if (!text2.empty())
 				::SetDlgItemTextA(hWndDlg, IDC_UPDATE_STATIC2, text2.c_str());
 		}
@@ -736,7 +736,8 @@ bool downloadBinary(const string& urlFrom, const string& destTo, const string& s
 				sprintf(sha2hashStr + i * 2, "%02x", sha2hash[i]);
 			}
 			string sha2HashToCheckLowerCase = sha2HashToCheck;
-			std::transform(sha2HashToCheckLowerCase.begin(), sha2HashToCheckLowerCase.end(), sha2HashToCheckLowerCase.begin(), ::tolower);
+			std::transform(sha2HashToCheckLowerCase.begin(), sha2HashToCheckLowerCase.end(), sha2HashToCheckLowerCase.begin(),
+				[](char c) { return static_cast<char>(::tolower(c)); });
 			if (sha2HashToCheckLowerCase != sha2hashStr)
 			{
 				string pluginPackageName = ::PathFindFileNameA(destTo.c_str());
