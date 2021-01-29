@@ -641,7 +641,7 @@ LRESULT CALLBACK updateCheckDlgProc(HWND hWndDlg, UINT message, WPARAM wParam, L
 		{
 			PNMLINK pNMLink = (PNMLINK)lParam;
 			LITEM item = pNMLink->item;
-			if (lstrcmp(item.szID, TEXT("id_download")) == 0)
+			if (lstrcmpW(item.szID, L"id_download") == 0)
 			{
 				::ShellExecute(NULL, TEXT("open"), TEXT("https://notepad-plus-plus.org/downloads/"), NULL, NULL, SW_SHOWNORMAL);
 			}
