@@ -607,12 +607,15 @@ LRESULT CALLBACK updateCheckDlgProc(HWND hWndDlg, UINT message, WPARAM wParam, L
 			const string& title = params->_gupParams.getMessageBoxTitle();
 			if (!title.empty())
 				::SetWindowTextA(hWndDlg, title.c_str());
-			string text1 = params->_nativeLang.getMessageString("MSGID_NOUPDATE1");
+			string text1 = params->_nativeLang.getMessageString("MSGID_NOUPDATE");
 			if (!text1.empty())
 				::SetDlgItemTextA(hWndDlg, IDC_UPDATE_STATIC1, text1.c_str());
 			string text2 = params->_nativeLang.getMessageString("MSGID_NOUPDATE2");
 			if (!text2.empty())
 				::SetDlgItemTextA(hWndDlg, IDC_UPDATE_STATIC2, text2.c_str());
+			string textLink = params->_nativeLang.getMessageString("MSGID_DOWNLOADTEXT");
+			if (!textLink.empty())
+				::SetDlgItemTextA(hWndDlg, IDC_DOWNLOAD_LINK, textLink.c_str());
 		}
 		goToScreenCenter(hWndDlg);
 		return TRUE;
