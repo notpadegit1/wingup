@@ -89,9 +89,9 @@ EXSTYLE WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE
 CAPTION "Notepad++ Update"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "No update is available.", IDC_UPDATE_STATIC1, 56, 6, 74, 8
-    LTEXT           "The auto-update may not have been activated yet.", IDC_UPDATE_STATIC2, 10, 24, 166, 8
-    CONTROL         "<a id=""id_download"">Go to the download page</a>", IDC_DOWNLOAD_LINK,
-                    "SysLink", 0, 51, 42, 85, 12
-    DEFPUSHBUTTON   "OK", IDOK, 68, 64, 50, 14
+    CTEXT           "No update is available.",IDC_UPDATE_STATIC1,7,12,173,8
+    CTEXT           "The auto-update may not have been activated yet.",IDC_UPDATE_STATIC2,7,24,173,8
+    CONTROL         "<a id=""id_download"">Go to the download page</a>",IDC_DOWNLOAD_LINK,
+                    "SysLink",0x0,51,42,84,12
+    DEFPUSHBUTTON   "OK",IDOK,68,65,50,14
 END
