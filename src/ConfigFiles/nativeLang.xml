@@ -22,8 +22,7 @@
 
 <GUP_NativeLangue name = "English">
 	<PopupMessages>
-		<MSGID_NOUPDATE>No update is available.</MSGID_NOUPDATE>
-		<MSGID_NOUPDATE2>The auto-update may not have been activated yet.</MSGID_NOUPDATE2>
+		<MSGID_NOUPDATE>No update is available.\r\rThe auto-update may not have been activated yet.</MSGID_NOUPDATE>
 		<MSGID_UPDATEAVAILABLE>An update package is available, do you want to download it?</MSGID_UPDATEAVAILABLE>
 		<MSGID_DOWNLOADTEXT>&lt;a id="id_download="&gt;Go to the download page&lt;/a&gt;</MSGID_DOWNLOADTEXT>
 		<MSGID_DOWNLOADSTOPPED>Download is stopped by user. Update is aborted.</MSGID_DOWNLOADSTOPPED>
