@@ -107,6 +107,3 @@ public:
 protected:
 	TiXmlNode *_nativeLangRoot;
 };
-
-// Replaces "\\r" by "\r" and "\\n" by "\n".
-std::string unescape(const std::string& str);

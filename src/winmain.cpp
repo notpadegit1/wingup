@@ -609,7 +609,7 @@ LRESULT CALLBACK updateCheckDlgProc(HWND hWndDlg, UINT message, WPARAM wParam, L
 				::SetWindowTextA(hWndDlg, title.c_str());
 			string textMsg = params->_nativeLang.getMessageString("MSGID_NOUPDATE");
 			if (!textMsg.empty())
-				::SetDlgItemTextA(hWndDlg, IDC_UPDATE_STATIC1, unescape(textMsg).c_str());
+				::SetDlgItemTextA(hWndDlg, IDC_UPDATE_STATIC1, textMsg.c_str());
 			string textLink = params->_nativeLang.getMessageString("MSGID_DOWNLOADTEXT");
 			if (!textLink.empty())
 				::SetDlgItemTextA(hWndDlg, IDC_DOWNLOAD_LINK, textLink.c_str());
