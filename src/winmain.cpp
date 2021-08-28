@@ -917,6 +917,43 @@ bool runInstaller(const wstring& app2runPath, const wstring& binWindowsClassName
 	return true;
 }
 
+// Returns a folder suitable for exe installer download destination.
+std::wstring getDestDir()
+{
+	// Some users might unset the temp variable, so need to account for that.
+	// Other fallbacks: %AppData%, %UserProfile% or GetModuleFileName().
+	size_t requiredSize = 0;
+	std::vector<wchar_t> envPath(MAX_PATH + 1, 0);
+	for (const wchar_t* env : { L"TEMP", L"TMP" })
+	{
+		errno_t e = _wgetenv_s(&requiredSize, envPath.data(), envPath.size(), env);
+		if (requiredSize == 0)
+		{
+			// Variable doesn't exist.
+			continue;
+		}
+		else if (e == ERANGE)
+		{
+			// Buffer is too small.
+			envPath.resize(requiredSize);
+			e = _wgetenv_s(&requiredSize, envPath.data(), envPath.size(), env);
+		}
+		if (e == 0)
+		{
+			// Trim and stop.
+			envPath.resize(requiredSize);
+			break;
+		}
+		else
+		{
+			envPath.clear();
+		}
+	}
+	if (!envPath.empty() && envPath[0])
+		return std::wstring(envPath.begin(), envPath.end());
+	return L".";
+}
+
 
 #ifdef _DEBUG
 #define WRITE_LOG(fn, suffix, log) writeLog(fn, suffix, log);
@@ -1235,7 +1272,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR lpszCmdLine, int)
 		// Download executable bin
 		//
 
-		std::wstring dlDest = _wgetenv(L"TEMP");
+		std::wstring dlDest = getDestDir();
 		dlDest += L"\\";
 		dlDest += ::PathFindFileName(gupDlInfo.getDownloadLocation().c_str());
 
