@@ -1108,7 +1108,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR lpszCmdLine, int)
 				}
 
 				// install
-				std::wstring dlDest = _wgetenv(L"TEMP");
+				std::wstring dlDest = getDestDir();
 				dlDest += L"\\";
 				dlDest += ::PathFindFileName(dlUrl.c_str());
 
