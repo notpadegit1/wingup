@@ -923,10 +923,11 @@ std::wstring getDestDir()
 	// Some users might unset the temp variable, so need to account for that.
 	// Other fallbacks: %AppData%, %UserProfile% or GetModuleFileName().
 	size_t requiredSize = 0;
-	std::vector<wchar_t> envPath(MAX_PATH + 1, 0);
-	for (const wchar_t* env : { L"TEMP", L"TMP" })
+	std::vector<wchar_t> buffer(MAX_PATH + 1, 0);
+	const wchar_t* envList[] = { L"TEMP", L"TMP", L"UserProfile", L"LocalAppData", L"ProgramData"};
+	for (const wchar_t* env : envList)
 	{
-		errno_t e = _wgetenv_s(&requiredSize, envPath.data(), envPath.size(), env);
+		errno_t e = _wgetenv_s(&requiredSize, buffer.data(), buffer.size(), env);
 		if (requiredSize == 0)
 		{
 			// Variable doesn't exist.
@@ -935,23 +936,26 @@ std::wstring getDestDir()
 		else if (e == ERANGE)
 		{
 			// Buffer is too small.
-			envPath.resize(requiredSize);
-			e = _wgetenv_s(&requiredSize, envPath.data(), envPath.size(), env);
+			buffer.resize(requiredSize);
+			e = _wgetenv_s(&requiredSize, buffer.data(), buffer.size(), env);
 		}
+
 		if (e == 0)
 		{
-			// Trim and stop.
-			envPath.resize(requiredSize);
-			break;
+			// Now buffer contains a null-terminated string.
+			if (!buffer.empty() && buffer[0])
+			{
+				if (!::PathFileExists(buffer.data()))
+					continue;
+				return buffer.data();
+			}
 		}
 		else
 		{
-			envPath.clear();
+			buffer.clear();
 		}
 	}
-	if (!envPath.empty() && envPath[0])
-		return std::wstring(envPath.begin(), envPath.end());
-	return L".";
+	return {};
 }
 
 
