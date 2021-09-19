@@ -61,6 +61,7 @@ const wchar_t MSGID_DOWNLOADSTOPPED[] = L"Download is stopped by user. Update is
 const wchar_t MSGID_CLOSEAPP[] = L" is opened.\rUpdater will close it in order to process the installation.\rContinue?";
 const wchar_t MSGID_ABORTORNOT[] = L"Do you want to abort update download?";
 const wchar_t MSGID_UNZIPFAILED[] = L"Can't unzip:\nOperation not permitted or decompression failed";
+const wchar_t MSGID_NODOWNLOADFOLDER[] = L"Can't find a download folder";
 const wchar_t MSGID_HELP[] = L"Usage :\r\
 \r\
 gup --help\r\
@@ -919,7 +920,7 @@ bool runInstaller(const wstring& app2runPath, const wstring& binWindowsClassName
 
 // Returns a folder suitable for exe installer download destination.
 // In case of error, shows a message box and returns an empty string.
-std::wstring getDestDir()
+std::wstring getDestDir(const GupNativeLang& nativeLang, const GupParameters& gupParams)
 {
 	const wchar_t* envVar = _wgetenv(L"TEMP");
 	if (envVar)
@@ -935,7 +936,10 @@ std::wstring getDestDir()
 		if (::PathFileExists(result.c_str()))
 			return result;
 	}
-	::MessageBox(NULL, L"Can't find a download folder", L"Error", MB_ICONERROR | MB_OK);
+	std::wstring message = nativeLang.getMessageString("MSGID_NODOWNLOADFOLDER");
+	if (message.empty())
+		message = MSGID_DOWNLOADSTOPPED;
+	::MessageBox(NULL, message.c_str(), gupParams.getMessageBoxTitle().c_str(), MB_ICONERROR | MB_OK);
 	return {};
 }
 
@@ -1093,7 +1097,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR lpszCmdLine, int)
 				}
 
 				// install
-				std::wstring dlDest = getDestDir();
+				std::wstring dlDest = getDestDir(nativeLang, gupParams);
 				if (dlDest.empty())
 					return -1;
 				dlDest += L"\\";
@@ -1259,7 +1263,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR lpszCmdLine, int)
 		// Download executable bin
 		//
 
-		std::wstring dlDest = getDestDir();
+		std::wstring dlDest = getDestDir(nativeLang, gupParams);
 		if (dlDest.empty())
 			return -1;
 		dlDest += L"\\";
