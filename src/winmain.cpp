@@ -918,43 +918,24 @@ bool runInstaller(const wstring& app2runPath, const wstring& binWindowsClassName
 }
 
 // Returns a folder suitable for exe installer download destination.
+// In case of error, shows a message box and returns an empty string.
 std::wstring getDestDir()
 {
-	// Some users might unset the temp variable, so need to account for that.
-	// Other fallbacks: %AppData%, %UserProfile% or GetModuleFileName().
-	size_t requiredSize = 0;
-	std::vector<wchar_t> buffer(MAX_PATH + 1, 0);
-	const wchar_t* envList[] = { L"TEMP", L"TMP", L"UserProfile", L"LocalAppData", L"ProgramData"};
-	for (const wchar_t* env : envList)
+	const wchar_t* envVar = _wgetenv(L"TEMP");
+	if (envVar)
+		return envVar;
+	envVar = _wgetenv(L"TMP");
+	if (envVar)
+		return envVar;
+	envVar = _wgetenv(L"AppData");
+	if (envVar)
 	{
-		errno_t e = _wgetenv_s(&requiredSize, buffer.data(), buffer.size(), env);
-		if (requiredSize == 0)
-		{
-			// Variable doesn't exist.
-			continue;
-		}
-		else if (e == ERANGE)
-		{
-			// Buffer is too small.
-			buffer.resize(requiredSize);
-			e = _wgetenv_s(&requiredSize, buffer.data(), buffer.size(), env);
-		}
-
-		if (e == 0)
-		{
-			// Now buffer contains a null-terminated string.
-			if (!buffer.empty() && buffer[0])
-			{
-				if (!::PathFileExists(buffer.data()))
-					continue;
-				return buffer.data();
-			}
-		}
-		else
-		{
-			buffer.clear();
-		}
+		std::wstring result = envVar;
+		result += L"\\Notepad++";
+		if (::PathFileExists(result.c_str()))
+			return result;
 	}
+	::MessageBox(NULL, L"Can't find a download folder", L"Error", MB_ICONERROR | MB_OK);
 	return {};
 }
 
@@ -1113,6 +1094,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR lpszCmdLine, int)
 
 				// install
 				std::wstring dlDest = getDestDir();
+				if (dlDest.empty())
+					return -1;
 				dlDest += L"\\";
 				dlDest += ::PathFindFileName(dlUrl.c_str());
 
@@ -1277,6 +1260,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR lpszCmdLine, int)
 		//
 
 		std::wstring dlDest = getDestDir();
+		if (dlDest.empty())
+			return -1;
 		dlDest += L"\\";
 		dlDest += ::PathFindFileName(gupDlInfo.getDownloadLocation().c_str());
 
