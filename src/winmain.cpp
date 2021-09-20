@@ -26,6 +26,7 @@
 #include <fstream>
 #include <string>
 #include <commctrl.h>
+#include <ShlObj_core.h>
 #include "resource.h"
 #include <shlwapi.h>
 #include "xmlTools.h"
@@ -928,6 +929,7 @@ std::wstring getDestDir(const GupNativeLang& nativeLang, const GupParameters& gu
 	envVar = _wgetenv(L"TMP");
 	if (envVar)
 		return envVar;
+
 	envVar = _wgetenv(L"AppData");
 	if (envVar)
 	{
@@ -936,6 +938,16 @@ std::wstring getDestDir(const GupNativeLang& nativeLang, const GupParameters& gu
 		if (::PathFileExists(result.c_str()))
 			return result;
 	}
+
+	LPWSTR path = nullptr;
+	const HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_Downloads, 0, nullptr, &path);
+	if (SUCCEEDED(hr))
+	{
+		std::wstring result = path;
+		CoTaskMemFree(path);
+		return result;
+	}
+
 	std::wstring message = nativeLang.getMessageString("MSGID_NODOWNLOADFOLDER");
 	if (message.empty())
 		message = MSGID_DOWNLOADSTOPPED;
