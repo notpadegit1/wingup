@@ -384,7 +384,7 @@ del ..\bin64\GUP.ipdb</Command>
       <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>libcurl.lib;ZipLib.lib;zlib.lib;lzma.lib;bzip2.lib;comctl32.lib;shlwapi.lib;Shell32.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl.lib;ZipLib.lib;zlib.lib;lzma.lib;bzip2.lib;comctl32.lib;shlwapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\curl\builds\libcurl-vc15-ARM64-release-dll-ipv6-sspi-winssl\lib;Bin\arm64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>

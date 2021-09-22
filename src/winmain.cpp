@@ -26,7 +26,6 @@
 #include <fstream>
 #include <string>
 #include <commctrl.h>
-#include <ShlObj_core.h>
 #include "resource.h"
 #include <shlwapi.h>
 #include "xmlTools.h"
@@ -923,6 +922,7 @@ bool runInstaller(const wstring& app2runPath, const wstring& binWindowsClassName
 // In case of error, shows a message box and returns an empty string.
 std::wstring getDestDir(const GupNativeLang& nativeLang, const GupParameters& gupParams)
 {
+	// Note: Other fallback directories may be Downloads, %UserProfile%, etc.
 	const wchar_t* envVar = _wgetenv(L"TEMP");
 	if (envVar)
 		return envVar;
@@ -939,18 +939,9 @@ std::wstring getDestDir(const GupNativeLang& nativeLang, const GupParameters& gu
 			return result;
 	}
 
-	LPWSTR path = nullptr;
-	const HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_Downloads, 0, nullptr, &path);
-	if (SUCCEEDED(hr))
-	{
-		std::wstring result = path;
-		CoTaskMemFree(path);
-		return result;
-	}
-
 	std::wstring message = nativeLang.getMessageString("MSGID_NODOWNLOADFOLDER");
 	if (message.empty())
-		message = MSGID_DOWNLOADSTOPPED;
+		message = MSGID_NODOWNLOADFOLDER;
 	::MessageBox(NULL, message.c_str(), gupParams.getMessageBoxTitle().c_str(), MB_ICONERROR | MB_OK);
 	return {};
 }
