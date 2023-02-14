@@ -32,7 +32,7 @@
 		<MSGID_GOTODOWNLOADPAGETEXT content="Ingen uppdatering är tillgänglig&#xD;eller så har senaste versionen ännu inte utlösts för uppdatering ($MSGID_MOREINFO$)&#xD;&#xD;$MSGID_DOWNLOADPAGE$ för att uppdatera Notepad++ manuellt." />
 		
 		<MSGID_DOWNLOADSTOPPED content="Nedladdningen stoppades av användaren. Uppdateringen avbröts." />
-		<MSGID_CLOSEAPP content=" är öppen.&#xD;Uppdateringsprogrammet kommer att stängas för att kunna bearbeta installationen.&#xD;Vill du fortsätta?" />
+		<MSGID_CLOSEAPP content=" är öppet.&#xD;Uppdateringsprogrammet kommer att stänga det för att kunna bearbeta installationen.&#xD;Vill du fortsätta?" />
 		<MSGID_ABORTORNOT content="Vill du avbryta nedladdningen av uppdateringen?" />
 		<MSGID_UNZIPFAILED content="Kan inte packa upp: Åtgärden tillåts inte eller dekomprimeringen misslyckades" />
 	</PopupMessages>
