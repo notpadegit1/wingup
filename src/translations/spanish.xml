@@ -20,7 +20,7 @@
 
 <!-- This file is optional.-->
 
-<GUP_NativeLangue name = "Español" version="5.1.3">
+<GUP_NativeLangue name = "Español" version="5.2.4">
 	<PopupMessages>
 		<MSGID_UPDATEAVAILABLE content="Hay una nueva actualización disponible, ¿desea descargarla?" />
 		<MSGID_VERSIONCURRENT  content="Versión actual     :" />
