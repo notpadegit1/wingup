@@ -25,7 +25,7 @@
 		<MSGID_UPDATETITLE content="Mise à jour de Notepad++"/>
 		<MSGID_UPDATEAVAILABLE content="Une mise à jour est disponible, voulez-vous la télécharger et l’installer ?"/>
 		<MSGID_VERSIONCURRENT content="Version installée&#x9;&#x9;:  "/>
-		<MSGID_VERSIONNEW content="&#xD;Version disponnible&#x9;:  "/>
+		<MSGID_VERSIONNEW content="Version disponnible&#x9;:  "/>
 		<MSGID_UPDATEYES content="Oui"/>
 		<MSGID_UPDATEYESSILENT content="Oui en silence"/><!-- Espace réduit -->
 		<MSGID_UPDATENo content="Non"/>
