@@ -20,7 +20,7 @@
 
 <!-- This file is optional.-->
 
-<GUP_NativeLangue name="français" version="5.3">
+<GUP_NativeLangue name="Français" version="5.3">
 	<PopupMessages>
 		<MSGID_UPDATETITLE content="Mise à jour de Notepad++"/>
 		<MSGID_UPDATEAVAILABLE content="Une mise à jour est disponible, voulez-vous la télécharger et l’installer ?"/>
