@@ -20,12 +20,12 @@
 
 <!-- This file is optional.-->
 
-<GUP_NativeLangue name="Français" version="5.3">
+<GUP_NativeLangue name="français" version="5.3">
 	<PopupMessages>
 		<MSGID_UPDATETITLE content="Mise à jour de Notepad++"/>
 		<MSGID_UPDATEAVAILABLE content="Une mise à jour est disponible, voulez-vous la télécharger et l’installer ?"/>
-		<MSGID_VERSIONCURRENT content="La version installée&#x9;&#x9;:  "/>
-		<MSGID_VERSIONNEW content="La dernière version disponnible&#x9;:  "/>
+		<MSGID_VERSIONCURRENT content="Version installée actuellement&#x9;:  "/>
+		<MSGID_VERSIONNEW content=" &#xD;Dernière version disponible&#x9;:  "/>
 		<MSGID_UPDATEYES content="Oui"/>
 		<MSGID_UPDATEYESSILENT content="Oui en silence"/><!-- Espace réduit -->
 		<MSGID_UPDATENo content="Non"/>
@@ -34,7 +34,7 @@
 		<MSGID_DOWNLOADPAGE content="aller à la page de téléchargement"/>
 		<MSGID_MOREINFO content="plus d’info"/>
 		<!-- $MSGID_DOWNLOADPAGE$ and $MSGID_MOREINFO$ are place holders, don't translate them -->
-		<MSGID_GOTODOWNLOADPAGETEXT content="Aucune mise à jour n’est disponible, &#xD;ou rien n’a encore été déclenché.&#xD;($MSGID_MOREINFO$).&#xD;&#xD;Pour mettre à jour Notepad++  manuellement,&#xD;$MSGID_DOWNLOADPAGE$."/>
+		<MSGID_GOTODOWNLOADPAGETEXT content="Aucune mise à jour n’est disponible, &#xD;ou rien n’a été déclenché à ce jour.&#xD;($MSGID_MOREINFO$).&#xD;&#xD;Pour mettre à jour Notepad++  manuellement,&#xD;$MSGID_DOWNLOADPAGE$."/>
 
 		<MSGID_DOWNLOADSTOPPED content="Le téléchargement est interrompu.&#xD;La mise à jour ne sera pas poursuivie."/>
 		<MSGID_CLOSEAPP content=" est ouvert.&#xD;Il sera fermé afin de pouvoir poursuivre l’installation.&#xD;Continuer ?"/>
