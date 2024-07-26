@@ -24,8 +24,8 @@
 	<PopupMessages>
 		<MSGID_UPDATETITLE content="Notepad++ Update" />
 		<MSGID_UPDATEAVAILABLE content="An update package is available, do you want to download and install it?" />
-		<MSGID_VERSIONCURRENT content="Current version is &#x9;:" />
-		<MSGID_VERSIONNEW content=" &#xD;Available version is &#x9;:" />
+		<MSGID_VERSIONCURRENT content="Current version installed is &#x9;:" />
+		<MSGID_VERSIONNEW content=" &#xD;Last available version is &#x9;:" />
 		<MSGID_UPDATEYES content="Yes" />
 		<MSGID_UPDATEYESSILENT content="Yes (Silent)" />
 		<MSGID_UPDATENo content="No" />
