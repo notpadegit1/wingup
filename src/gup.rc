@@ -78,8 +78,8 @@ BEGIN
     LTEXT "An update package is available, do you want to download and install it?",IDC_YESNONEVERMSG,15,15,250,50
     PUSHBUTTON      "Yes",IDYES,27,72,50,14
     PUSHBUTTON      "Yes (Silent)",IDOK,80,72,56,14
-    PUSHBUTTON      "No",IDNO,137,72,50,14
-    PUSHBUTTON      "Never",IDCANCEL,190,72,50,14
+    PUSHBUTTON      "No",IDNO,138,72,50,14
+    PUSHBUTTON      "Never",IDCANCEL,191,72,50,14
 END
 
 IDD_UPDATE_DLG DIALOGEX 0, 0, 200, 110
