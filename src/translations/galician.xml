@@ -20,18 +20,18 @@
 
 <!-- This file is optional.-->
 
-<GUP_NativeLangue name="Galego" version="5.3">
+<GUP_NativeLangue name="galego" version="5.3.0">
 	<PopupMessages>
 		<MSGID_UPDATETITLE content="Actualizador Notepad++"/>
 		<MSGID_UPDATEAVAILABLE content="Hai unha nova actualización dispoñible, ¿quere descargala?"/>
-		<MSGID_VERSIONCURRENT content="Versión actual   	  :"/>
+		<MSGID_VERSIONCURRENT content="Versión actual:"/>
 		<MSGID_VERSIONNEW content="Versión dispoñible:"/>
 		<MSGID_UPDATEYES content="Si"/>
 		<MSGID_UPDATEYESSILENT content="Si (sin son)"/>
-		<MSGID_UPDATENO content="Non"/>
+		<MSGID_UPDATENo content="Non"/>
 		<MSGID_UPDATENEVER content="Nunca"/>
 		
-		<MSGID_DOWNLOADPAGE content="Vaia á páxina de descarga"/>
+		<MSGID_DOWNLOADPAGE content="Vaia á páxina de descargas"/>
 		<MSGID_MOREINFO content="máis info"/>
 		<!-- $MSGID_DOWNLOADPAGE$ and $MSGID_MOREINFO$ are place holders, don't translate them -->
 		<MSGID_GOTODOWNLOADPAGETEXT content="Non hai ningunha actualización dispoñible&#xD;ou aínda non hai publicada unha versión máis recente ($MSGID_MOREINFO$).&#xD;&#xD;$MSGID_DOWNLOADPAGE$ se desexa actualizar Notepad++ de forma manual."/>
